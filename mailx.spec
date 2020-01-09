@@ -4,7 +4,7 @@
 Summary: Enhanced implementation of the mailx command
 Name: mailx
 Version: 12.4
-Release: 8%{?dist}
+Release: 10%{?dist}
 Group: Applications/Internet
 # mailx-12.4/nsserr.c, mailx-12.4/nss.c  have MPLv1.1 license
 # other files are BSD
@@ -16,11 +16,12 @@ Patch0: nail-11.25-config.patch
 Patch1: mailx-12.3-pager.patch
 Patch2: mailx-12.4-collect.patch
 
-# resolves: #1171175
+# resolves: #1171176
 Patch6: mailx-12.5-outof-Introduce-expandaddr-flag.patch
 Patch7: mailx-12.5-unpack-Disable-option-processing-for-email-addresses.patch
 Patch8: mailx-12.5-fio.c-Unconditionally-require-wordexp-support.patch
 Patch9: mailx-12.5-globname-Invoke-wordexp-with-WRDE_NOCMD-CVE-2004-277.patch
+Patch10: mailx-12.5-encsplit.patch
 
 %if %{use_nss}
 BuildRequires: nss-devel, pkgconfig, krb5-devel
@@ -64,6 +65,7 @@ as well as "nail" (the initial name of this project).
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
 sed -i 's,/etc/nail.rc,%{mailrc},g' mailx.1 mailx.1.html
 
 
@@ -178,9 +180,17 @@ exit 0
 
 
 %changelog
+* Wed Aug 22 2018 Nikola Forró <nforro@redhat.com> - 12.4-10
+- remove unused variable
+  related: #1545837
+
+* Wed Aug 22 2018 Nikola Forró <nforro@redhat.com> - 12.4-9
+- fix multi-byte encoded line-folding
+  resolves: #1545837
+
 * Wed Dec 10 2014 jchaloup <jchaloup@redhat.com> - 12.4-8
 - CVE-2004-2771 mailx: command execution flaw
-  resolves: #1171175
+  resolves: #1171176
 
 * Mon May 27 2013 Peter Schiffer <pschiffe@redhat.com> - 12.4-7
 - resolves: #857120
