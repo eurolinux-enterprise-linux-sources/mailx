@@ -4,7 +4,7 @@
 Summary: Enhanced implementation of the mailx command
 Name: mailx
 Version: 12.4
-Release: 7%{?dist}
+Release: 8%{?dist}
 Group: Applications/Internet
 # mailx-12.4/nsserr.c, mailx-12.4/nss.c  have MPLv1.1 license
 # other files are BSD
@@ -15,6 +15,12 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Patch0: nail-11.25-config.patch
 Patch1: mailx-12.3-pager.patch
 Patch2: mailx-12.4-collect.patch
+
+# resolves: #1171175
+Patch6: mailx-12.5-outof-Introduce-expandaddr-flag.patch
+Patch7: mailx-12.5-unpack-Disable-option-processing-for-email-addresses.patch
+Patch8: mailx-12.5-fio.c-Unconditionally-require-wordexp-support.patch
+Patch9: mailx-12.5-globname-Invoke-wordexp-with-WRDE_NOCMD-CVE-2004-277.patch
 
 %if %{use_nss}
 BuildRequires: nss-devel, pkgconfig, krb5-devel
@@ -54,7 +60,10 @@ as well as "nail" (the initial name of this project).
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
-
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
 sed -i 's,/etc/nail.rc,%{mailrc},g' mailx.1 mailx.1.html
 
 
@@ -169,6 +178,10 @@ exit 0
 
 
 %changelog
+* Wed Dec 10 2014 jchaloup <jchaloup@redhat.com> - 12.4-8
+- CVE-2004-2771 mailx: command execution flaw
+  resolves: #1171175
+
 * Mon May 27 2013 Peter Schiffer <pschiffe@redhat.com> - 12.4-7
 - resolves: #857120
   fixed incorrect return code when TMPDIR points to invalid path
