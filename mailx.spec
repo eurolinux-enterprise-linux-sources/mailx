@@ -4,7 +4,7 @@
 Summary: Enhanced implementation of the mailx command
 Name: mailx
 Version: 12.4
-Release: 6%{?dist}
+Release: 7%{?dist}
 Group: Applications/Internet
 # mailx-12.4/nsserr.c, mailx-12.4/nss.c  have MPLv1.1 license
 # other files are BSD
@@ -14,6 +14,7 @@ Source0: http://downloads.sourceforge.net/heirloom/mailx-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Patch0: nail-11.25-config.patch
 Patch1: mailx-12.3-pager.patch
+Patch2: mailx-12.4-collect.patch
 
 %if %{use_nss}
 BuildRequires: nss-devel, pkgconfig, krb5-devel
@@ -22,7 +23,11 @@ BuildRequires: openssl-devel
 %endif
 
 Obsoletes: nail < %{version}
-Provides: nail = %{version}
+Provides: nail = %{version}, mail
+
+Requires(post): %{_sbindir}/alternatives
+Requires(preun): %{_sbindir}/alternatives
+Requires(postun): %{_sbindir}/alternatives
 
 
 %description
@@ -48,6 +53,7 @@ as well as "nail" (the initial name of this project).
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 sed -i 's,/etc/nail.rc,%{mailrc},g' mailx.1 mailx.1.html
 
@@ -79,20 +85,19 @@ make `cat makeflags` \
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT STRIP=: `cat makeflags` install
 
-ln -s mailx $RPM_BUILD_ROOT/bin/mail
+touch $RPM_BUILD_ROOT/bin/mail
 
 install -d $RPM_BUILD_ROOT%{_bindir}
 pref=`echo %{_bindir} | sed 's,/[^/]*,../,g'`
 
 pushd $RPM_BUILD_ROOT%{_bindir}
-ln -s ${pref}bin/mailx Mail
 ln -s ${pref}bin/mailx nail
+touch Mail
 popd
 
 pushd $RPM_BUILD_ROOT%{_mandir}/man1
-ln -s mailx.1 mail.1
-ln -s mailx.1 Mail.1
 ln -s mailx.1 nail.1
+touch mail.1 Mail.1
 popd
 
 
@@ -122,16 +127,54 @@ rm -rf $RPM_BUILD_ROOT
 } || :
 
 
+%postun
+if [ $1 -ge 1 ] ; then
+    mail=$(readlink %{_sysconfdir}/alternatives/mail)
+    if [ "$mail" == "/bin/mailx" ]; then
+        %{_sbindir}/alternatives --set mail /bin/mailx
+    fi
+fi
+exit 0
+
+
+%post
+# Set up the alternatives files for mail.
+%{_sbindir}/alternatives --install /bin/mail mail /bin/mailx 90 \
+    --slave %{_bindir}/Mail mail-Mail /bin/mailx \
+    --slave %{_mandir}/man1/mail.1.gz mail-mail-man %{_mandir}/man1/mailx.1.gz \
+    --slave %{_mandir}/man1/Mail.1.gz mail-Mail-man %{_mandir}/man1/mailx.1.gz
+
+
+%preun
+if [ $1 = 0 ]; then
+    %{_sbindir}/alternatives --remove mail /bin/mailx
+fi
+exit 0
+
+
 %files
 %defattr(-,root,root,-)
 %doc COPYING AUTHORS README
 %config(noreplace) %{mailrc}
-/bin/*
-%{_bindir}/*
-%{_mandir}/*/*
+/bin/mailx
+%{_bindir}/nail
+%{_mandir}/man1/mailx.1.gz
+%{_mandir}/man1/nail.1.gz
+
+%ghost %attr(0755,-,-) /bin/mail
+%ghost %attr(0755,-,-) %{_bindir}/Mail
+
+%ghost %{_mandir}/man1/mail.1.gz
+%ghost %{_mandir}/man1/Mail.1.gz
 
 
 %changelog
+* Mon May 27 2013 Peter Schiffer <pschiffe@redhat.com> - 12.4-7
+- resolves: #857120
+  fixed incorrect return code when TMPDIR points to invalid path
+- resolves: #845098
+  added support for alternatives
+
 * Tue Feb 16 2010 Ivana Hutarova Varekova <varekova@redhat.com> - 12.4-6
 - Related: #543948
   minor spec file changes
