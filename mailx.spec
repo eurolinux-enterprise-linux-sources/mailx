@@ -4,7 +4,7 @@
 Summary: Enhanced implementation of the mailx command
 Name: mailx
 Version: 12.5
-Release: 16%{?dist}
+Release: 19%{?dist}
 # MPLv1.1 .. nss.c, nsserr.c
 License: BSD with advertising and MPLv1.1
 Group: Applications/Internet
@@ -36,6 +36,8 @@ Patch11: mailx-12.5-nss_check_host-fix.patch
 Patch12: mailx-12.5-mailx.1-environment-variables.patch
 # resolves: #1147570
 Patch13: mailx-12.5-mailx.1-from-syntax.patch
+# resolves: #1474130
+Patch14: mailx-12.5-encsplit.patch
 
 %if %{use_nss}
 BuildRequires: nss-devel, pkgconfig, krb5-devel
@@ -82,6 +84,7 @@ as well as "nail" (the initial name of this project).
 %patch11 -p1
 %patch12 -p1
 %patch13 -p1
+%patch14 -p1
 sed -i 's,/etc/nail.rc,%{mailrc},g' mailx.1
 
 
@@ -157,6 +160,18 @@ popd
 
 
 %changelog
+* Wed Feb 07 2018 Nikola Forró <nforro@redhat.com> - 12.5-19
+- fix also quoted-printable encoded words
+  related: #1474130
+
+* Wed Nov 22 2017 Nikola Forró <nforro@redhat.com> - 12.5-18
+- add missing linear whitespace to encsplit patch
+  related: #1474130
+
+* Mon Aug 07 2017 Nikola Forró <nforro@redhat.com> - 12.5-17
+- fix multi-byte encoded line-folding
+  resolves: #1474130
+
 * Fri Feb 10 2017 Nikola Forró <nforro@redhat.com> - 12.5-16
 - extend description of FROM syntax
   resolves: #1147570
