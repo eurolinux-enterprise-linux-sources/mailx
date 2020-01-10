@@ -4,7 +4,7 @@
 Summary: Enhanced implementation of the mailx command
 Name: mailx
 Version: 12.5
-Release: 12%{?dist}
+Release: 16%{?dist}
 # MPLv1.1 .. nss.c, nsserr.c
 License: BSD with advertising and MPLv1.1
 Group: Applications/Internet
@@ -23,11 +23,19 @@ Patch3: mailx-12.5-fname-null.patch
 Patch4: mailx-12.5-collect.patch
 # resolves: #948869
 Patch5: mailx-12.5-usage.patch
-# resolves: #1171177
+# resolves: #1171178
 Patch6: mailx-12.5-outof-Introduce-expandaddr-flag.patch
 Patch7: mailx-12.5-unpack-Disable-option-processing-for-email-addresses.patch
 Patch8: mailx-12.5-fio.c-Unconditionally-require-wordexp-support.patch
 Patch9: mailx-12.5-globname-Invoke-wordexp-with-WRDE_NOCMD-CVE-2004-277.patch
+# resolves: #1113611
+Patch10: mailx-12.5-empty-from.patch
+# resolves: #1290043
+Patch11: mailx-12.5-nss_check_host-fix.patch
+# resolves: #1147568
+Patch12: mailx-12.5-mailx.1-environment-variables.patch
+# resolves: #1147570
+Patch13: mailx-12.5-mailx.1-from-syntax.patch
 
 %if %{use_nss}
 BuildRequires: nss-devel, pkgconfig, krb5-devel
@@ -70,6 +78,10 @@ as well as "nail" (the initial name of this project).
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
+%patch11 -p1
+%patch12 -p1
+%patch13 -p1
 sed -i 's,/etc/nail.rc,%{mailrc},g' mailx.1
 
 
@@ -145,9 +157,26 @@ popd
 
 
 %changelog
+* Fri Feb 10 2017 Nikola Forró <nforro@redhat.com> - 12.5-16
+- extend description of FROM syntax
+  resolves: #1147570
+
+* Fri Feb 10 2017 Nikola Forró <nforro@redhat.com> - 12.5-15
+- correct information about environment variables
+  resolves: #1147568
+
+* Tue Jan 17 2017 Nikola Forró <nforro@redhat.com> - 12.5-14
+- fix return value of nss_check_host()
+  resolves: #1290043
+
+* Tue Jan 17 2017 Nikola Forró <nforro@redhat.com> - 12.5-13
+- fix SIGSEGV crash in smtp_auth_var()
+- add warning message for empty from variable
+  resolves: #1113611
+
 * Wed Dec 10 2014 jchaloup <jchaloup@redhat.com> - 12.5-12
 - CVE-2004-2771 mailx: command execution flaw
-  resolves: #1171177
+  resolves: #1171178
 
 * Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 12.5-11
 - Mass rebuild 2014-01-24

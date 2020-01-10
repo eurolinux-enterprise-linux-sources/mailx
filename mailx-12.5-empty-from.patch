@@ -1,0 +1,61 @@
+From dc22d0df73a7ecb036d73cfa1814ddf998ff131b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Nikola=20Forr=C3=B3?= <nforro@redhat.com>
+Date: Tue, 17 Jan 2017 14:03:00 +0100
+Subject: [PATCH] Fix SIGSEGV crash in smtp_auth_var()
+Add warning message for empty from variable
+
+---
+ sendout.c | 13 +++++++++++++
+ smtp.c    |  5 ++++-
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/sendout.c b/sendout.c
+index c52f15d..f83952a 100644
+--- a/sendout.c
++++ b/sendout.c
+@@ -966,6 +966,19 @@ mail1(struct header *hp, int printheaders, struct message *quote,
+ 		return STOP;
+ 	}
+ #endif
++
++	/*
++	 * Variable "from" is set but empty, let user know
++	 * that something is wrong.
++	 */
++	if ((cp = value("from")) != NULL && !*cp) {
++		fprintf(stderr, "From address is empty. ");
++		fprintf(stderr, "Check your mail config ");
++		fprintf(stderr, "file for typos. E.g. no ");
++		fprintf(stderr, "whitespace after set from=");
++		fprintf(stderr, "\n");
++	}
++
+ 	if ((cp = value("autocc")) != NULL && *cp)
+ 		hp->h_cc = cat(hp->h_cc, checkaddrs(sextract(cp, GCC|GFULL)));
+ 	if ((cp = value("autobcc")) != NULL && *cp)
+diff --git a/smtp.c b/smtp.c
+index b4561e3..baab5d1 100644
+--- a/smtp.c
++++ b/smtp.c
+@@ -135,7 +135,7 @@ myaddrs(struct header *hp)
+ 		if (hp->h_from->n_name)
+ 			return savestr(hp->h_from->n_name);
+ 	}
+-	if ((cp = value("from")) != NULL)
++	if ((cp = value("from")) != NULL && *cp)
+ 		return cp;
+ 	/*
+ 	 * When invoking sendmail directly, it's its task
+@@ -177,6 +177,9 @@ smtp_auth_var(const char *type, const char *addr)
+ 	char	*var, *cp;
+ 	int	len;
+ 
++	if (type == NULL || addr == NULL)
++		return NULL;
++
+ 	var = ac_alloc(len = strlen(type) + strlen(addr) + 7);
+ 	snprintf(var, len, "smtp-auth%s-%s", type, addr);
+ 	if ((cp = value(var)) != NULL)
+-- 
+2.7.4
+
