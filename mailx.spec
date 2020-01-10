@@ -4,7 +4,7 @@
 Summary: Enhanced implementation of the mailx command
 Name: mailx
 Version: 12.5
-Release: 19%{?dist}
+Release: 9%{?dist}
 # MPLv1.1 .. nss.c, nsserr.c
 License: BSD with advertising and MPLv1.1
 Group: Applications/Internet
@@ -23,21 +23,6 @@ Patch3: mailx-12.5-fname-null.patch
 Patch4: mailx-12.5-collect.patch
 # resolves: #948869
 Patch5: mailx-12.5-usage.patch
-# resolves: #1171178
-Patch6: mailx-12.5-outof-Introduce-expandaddr-flag.patch
-Patch7: mailx-12.5-unpack-Disable-option-processing-for-email-addresses.patch
-Patch8: mailx-12.5-fio.c-Unconditionally-require-wordexp-support.patch
-Patch9: mailx-12.5-globname-Invoke-wordexp-with-WRDE_NOCMD-CVE-2004-277.patch
-# resolves: #1113611
-Patch10: mailx-12.5-empty-from.patch
-# resolves: #1290043
-Patch11: mailx-12.5-nss_check_host-fix.patch
-# resolves: #1147568
-Patch12: mailx-12.5-mailx.1-environment-variables.patch
-# resolves: #1147570
-Patch13: mailx-12.5-mailx.1-from-syntax.patch
-# resolves: #1474130
-Patch14: mailx-12.5-encsplit.patch
 
 %if %{use_nss}
 BuildRequires: nss-devel, pkgconfig, krb5-devel
@@ -76,15 +61,6 @@ as well as "nail" (the initial name of this project).
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
 sed -i 's,/etc/nail.rc,%{mailrc},g' mailx.1
 
 
@@ -160,45 +136,6 @@ popd
 
 
 %changelog
-* Wed Feb 07 2018 Nikola Forró <nforro@redhat.com> - 12.5-19
-- fix also quoted-printable encoded words
-  related: #1474130
-
-* Wed Nov 22 2017 Nikola Forró <nforro@redhat.com> - 12.5-18
-- add missing linear whitespace to encsplit patch
-  related: #1474130
-
-* Mon Aug 07 2017 Nikola Forró <nforro@redhat.com> - 12.5-17
-- fix multi-byte encoded line-folding
-  resolves: #1474130
-
-* Fri Feb 10 2017 Nikola Forró <nforro@redhat.com> - 12.5-16
-- extend description of FROM syntax
-  resolves: #1147570
-
-* Fri Feb 10 2017 Nikola Forró <nforro@redhat.com> - 12.5-15
-- correct information about environment variables
-  resolves: #1147568
-
-* Tue Jan 17 2017 Nikola Forró <nforro@redhat.com> - 12.5-14
-- fix return value of nss_check_host()
-  resolves: #1290043
-
-* Tue Jan 17 2017 Nikola Forró <nforro@redhat.com> - 12.5-13
-- fix SIGSEGV crash in smtp_auth_var()
-- add warning message for empty from variable
-  resolves: #1113611
-
-* Wed Dec 10 2014 jchaloup <jchaloup@redhat.com> - 12.5-12
-- CVE-2004-2771 mailx: command execution flaw
-  resolves: #1171178
-
-* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 12.5-11
-- Mass rebuild 2014-01-24
-
-* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 12.5-10
-- Mass rebuild 2013-12-27
-
 * Mon Jul 22 2013 Peter Schiffer <pschiffe@redhat.com> - 12.5-9
 - related: #912785
   used -D_FILE_OFFSET_BITS=64 flag at the compile time
